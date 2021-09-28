@@ -11,7 +11,6 @@ import (
 	"sort"
 	"strings"
 	"sync"
-	"sync/atomic"
 	"time"
 )
 
@@ -149,7 +148,7 @@ func lookupResourceListL1(domain string, typeC dnsmessage.Type) (resourceList []
 	}
 	msg := &dnsmessage.Message{
 		Header: dnsmessage.Header{
-			ID:                 uint16(atomic.AddUint32(&gLookupId, 1)),
+			ID:                 0,
 			Response:           false,
 			OpCode:             0,
 			Authoritative:      false,
@@ -179,7 +178,7 @@ func lookupResourceListL1(domain string, typeC dnsmessage.Type) (resourceList []
 			return nil, ErrMaxDepth
 		}
 		var conn net.Conn
-		conn, err = gDialRemote(serverList)
+		conn, err = dialRemote(serverList)
 		if err != nil {
 			return nil, err
 		}
@@ -211,7 +210,7 @@ func lookupResourceListL1(domain string, typeC dnsmessage.Type) (resourceList []
 	}
 }
 
-var gDialRemote = func(targetAddrList []string) (conn net.Conn, err error) {
+func dialRemote(targetAddrList []string) (conn net.Conn, err error) {
 	if len(targetAddrList) == 0 {
 		return nil, errors.New("LookupContext.DialRemote targetAddrList is nil")
 	}
@@ -299,5 +298,3 @@ var gRootServers = []string{
 //k.root-servers.net 	193.0.14.129		RIPE NCC	欧洲	18
 //l.root-servers.net 	199.7.83.42		ICANN		31
 //m.root-servers.net 	202.12.27.33		WIDE Project	日本	6
-
-var gLookupId uint32
